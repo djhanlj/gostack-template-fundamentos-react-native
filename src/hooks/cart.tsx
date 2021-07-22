@@ -45,16 +45,17 @@ const CartProvider: React.FC = ({ children }) => {
   const addToCart = useCallback(
     async product => {
       const productExists = products.find(p => p.id === product.id);
+      let productsAdd: Product[];
+
       if (productExists) {
-        setProducts(
-          products.map(p =>
-            p.id === product.id ? { ...product, quantity: p.quantity + 1 } : p,
-          ),
+        productsAdd = products.map(p =>
+          p.id === product.id ? { ...product, quantity: p.quantity + 1 } : p,
         );
       } else {
-        setProducts([...products, { ...product, quantity: 1 }]);
+        productsAdd = [...products, { ...product, quantity: 1 }];
       }
 
+      setProducts(productsAdd);
       await AsyncStorage.setItem(
         '@GoMaerketPlace:products',
         JSON.stringify(products),
@@ -82,11 +83,12 @@ const CartProvider: React.FC = ({ children }) => {
 
   const decrement = useCallback(
     async id => {
-      const productsDecrement = products.map(product =>
-        product.id === id && product.quantity > 0
-          ? { ...product, quantity: product.quantity - 1 }
-          : product,
-      );
+      const productsDecrement = products.map(product => {
+        if (product.id === id && product.quantity > 0) {
+          return { ...product, quantity: product.quantity - 1 };
+        }
+        return product;
+      });
 
       setProducts(productsDecrement);
       await AsyncStorage.setItem(
